@@ -6,8 +6,8 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from backend.agent.vector_store import get_retriever
 from backend.agent.memory import get_chat_history
-
-
+from langfuse.langchain import CallbackHandler
+from backend.core.config import settings
 
 class State(TypedDict):
     messages:list[BaseMessage]
@@ -30,6 +30,13 @@ def generate(state:State)->dict:
         temperature=0
     )
     context=state.get("context","")
+
+    langfuse_handler=CallbackHandler(
+secret_key=settings.LANGFUSE_SECRET_KEY,
+        public_key=settings.LANGFUSE_PUBLIC_KEY,
+        host=settings.LANGFUSE_HOST,
+        session_id=state.get("session_id", "unknown-session")
+    )
     system_prompt = (
         "You are DocuMind AI, a professional legal contract analyst with over 20 years of experience "
         "reviewing and interpreting legal documents, agreements, and contracts. "
@@ -52,7 +59,9 @@ def generate(state:State)->dict:
         f"Document Context:\n{context}"
     )
     full_messages= [SystemMessage(content=system_prompt)]+state['messages']
-    response= llm.invoke(full_messages)
+    response= llm.invoke(full_messages,
+                         config={"callbacks":[langfuse_handler]}
+                         )
     result= state['messages']+[response]
     return {"messages":result}
     
