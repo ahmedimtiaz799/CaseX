@@ -11,7 +11,7 @@ def init_vector_store()->PGVector:
         model="models/text-embedding-004"
     )
     connection_string=os.getenv("Database_URL")
-    collection_name=os.getenv("Collection_Name","DocuMindAI")
+    collection_name=os.getenv("Collection_Name","CaseX")
     if not connection_string:
         raise ValueError("Database_URL environment is not set.")
     vector_store=PGVector(
@@ -31,7 +31,6 @@ def get_retriever(k:int=5)->VectorStoreRetriever:
     """Retrieving the first 5 results from the vector store."""
     vector_store=init_vector_store()
     return vector_store.as_retriever(search_kwargs={"k":k})
-
 
 
 
