@@ -9,7 +9,23 @@ from backend.agent.vector_store import init_vector_store
 from backend.api.routes import router as api_router
 
 load_dotenv()
-app = FastAPI()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Initializing vector store...")
+    init_vector_store()
+    print("Vector store initialized successfully.")
+    yield
+    print("Shutting down application...")
+
+
+app = FastAPI(
+    title="CaseX",
+    description="Api for legal document analysis",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,25 +37,12 @@ app.add_middleware(
 
 app.include_router(api_router, prefix="/api/v1")
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("Initializing vector store...")
-    init_vector_store()
-    print("Vector store initialized successfully.")
-    yield
-    print("Shutting down application...")
 
-app = FastAPI(
-    title="CaseX",
-    description="Api for legal document analysis",
-    version="1.0.0",
-    lifespan=lifespan,
-)
-
-app.get("/")
+@app.get("/")
 async def root():
     """Health check endpoint to verify that the API is running."""
-    return{
+    return {
         "message": "Welcome to the CaseX API! The API is up and running.",
         "version": "1.0.0"
     }
+
