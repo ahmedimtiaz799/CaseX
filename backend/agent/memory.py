@@ -1,7 +1,7 @@
 from typing import List,Dict
 from langchain_core.chat_history import InMemoryChatMessageHistory
 
-session_store=Dict={}
+session_store:Dict={}
 
 def get_chat_history(session_id:str)->InMemoryChatMessageHistory:
     """Retrieving the chat history for a given session ID."""
