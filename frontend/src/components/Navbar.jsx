@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Scale } from 'lucide-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -7,43 +8,43 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 w-full bg-slate-900 border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-
-       
-        <div className="flex items-center gap-2">
-          <span className="text-2xl" aria-hidden="true">⚖️</span>
-          <span className="font-heading font-bold text-xl text-amber-500 tracking-wide">
-            CaseX
-          </span>
-        </div>
-
         
-        <div className="hidden md:flex items-center gap-8">
-          <a href="#features" className="text-white hover:text-amber-400 transition-colors font-sans text-sm font-medium">
-            Features
-          </a>
-          <a href="#how-it-works" className="text-white hover:text-amber-400 transition-colors font-sans text-sm font-medium">
-            How It Works
-          </a>
-          <a href="#testimonials" className="text-white hover:text-amber-400 transition-colors font-sans text-sm font-medium">
-            Testimonials
-          </a>
-        </div>
+        <a href="/" className="flex items-center gap-2.5 group cursor-pointer select-none">
+  
+  <div className="flex items-center justify-center w-8 h-8 rounded-lg border border-amber-500/20 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.15)] group-hover:bg-amber-500/20 group-hover:border-amber-500/30 transition-all duration-300">
+  <Scale className="w-[18px] h-[18px] text-amber-400" strokeWidth={2} />
+</div>
+  
+  
+  <span className="font-heading font-extrabold text-xl text-white tracking-wide">
+    Case<span className="text-amber-500">X</span>
+  </span>
+</a>
 
-        
+       <div className="hidden md:flex items-center gap-1">
+  <a href="#features" className="px-4 py-2 rounded-md text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-200 font-sans text-sm font-medium">
+    Features
+  </a>
+  <a href="#how-it-works" className="px-4 py-2 rounded-md text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-200 font-sans text-sm font-medium">
+    How It Works
+  </a>
+  <a href="#testimonials" className="px-4 py-2 rounded-md text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-200 font-sans text-sm font-medium">
+    Testimonials
+  </a>
+</div>
         <div className="hidden md:block">
-          <Button
-            onClick={() => window.location.href = '/login'}
-            className="bg-amber-500 text-slate-900 hover:bg-amber-400 ring-1 ring-amber-500/50 font-sans font-medium transition-all h-10 px-6 text-sm cursor-pointer"
-          >
-            Login
-          </Button>
-        </div>
+  <Button
+    onClick={() => window.location.href = '/login'}
+    className="bg-amber-500 text-slate-950 hover:bg-amber-400 font-sans font-semibold transition-all px-5 py-2 h-auto rounded-md text-sm cursor-pointer shadow-sm"
+  >
+    Login
+  </Button>
+</div>
 
-       
         <div className="md:hidden">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-white hover:text-amber-400 focus:outline-none transition-colors"
+            className="text-slate-300 hover:text-white focus:outline-none transition-colors"
             aria-label="Toggle menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,26 +56,23 @@ const Navbar = () => {
             </svg>
           </button>
         </div>
-
       </div>
 
-      
       {isOpen && (
         <div className="md:hidden bg-slate-900 border-t border-slate-800 px-6 py-4 flex flex-col gap-4 shadow-xl">
-          <a href="#features" onClick={() => setIsOpen(false)} className="text-white hover:text-amber-400 transition-colors font-sans text-base font-medium block">
+          <a href="#features" onClick={() => setIsOpen(false)} className="text-slate-300 hover:text-white transition-colors font-sans text-base font-medium block">
             Features
           </a>
-          <a href="#how-it-works" onClick={() => setIsOpen(false)} className="text-white hover:text-amber-400 transition-colors font-sans text-base font-medium block">
+          <a href="#how-it-works" onClick={() => setIsOpen(false)} className="text-slate-300 hover:text-white transition-colors font-sans text-base font-medium block">
             How It Works
           </a>
-          <a href="#testimonials" onClick={() => setIsOpen(false)} className="text-white hover:text-amber-400 transition-colors font-sans text-base font-medium block">
+          <a href="#testimonials" onClick={() => setIsOpen(false)} className="text-slate-300 hover:text-white transition-colors font-sans text-base font-medium block">
             Testimonials
           </a>
           
-          
           <Button
             onClick={() => window.location.href = '/login'}
-            className="bg-amber-500 text-slate-900 hover:bg-amber-400 ring-1 ring-amber-500/50 font-sans font-medium w-full mt-2 h-10 text-sm cursor-pointer"
+            className="bg-amber-500 text-slate-900 hover:bg-amber-400 font-sans font-semibold w-full mt-2 h-10 text-sm shadow-sm cursor-pointer"
           >
             Login
           </Button>
