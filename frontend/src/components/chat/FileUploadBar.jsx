@@ -1,0 +1,157 @@
+import React, { useState, useRef } from 'react';
+import { Paperclip, Send, X } from 'lucide-react';
+
+const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
+    const [text, setText] = useState('');
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [toast, setToast] = useState(null);
+    const textareaRef = useRef(null);
+    const fileInputRef = useRef(null);
+
+    const showToast = (message, isError = false) => {
+        setToast({ message, isError });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    const handleInput = (e) => {
+        setText(e.target.value);
+        e.target.style.height = 'auto';
+        e.target.style.height = `${Math.min(e.target.scrollHeight, 116)}px`;
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    const handleSend = () => {
+        if (!text.trim() || isLoading || isUploading) return;
+        onSendMessage(text, selectedFile);
+        setText('');
+        setSelectedFile(null);
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+        }
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setSelectedFile(file);
+        setIsUploading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('http://localhost:8000/api/v1/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) throw new Error('Upload failed');
+
+            showToast('Document uploaded successfully');
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            setSelectedFile(null);
+            showToast('Upload failed. Please try again.', true);
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const inputDisabled = isLoading || isUploading;
+
+    return (
+        <>
+            {toast && (
+                <div className={`fixed top-4 right-4 z-[60] bg-slate-900 border text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 duration-300 ${
+                    toast.isError
+                        ? 'border-red-500/30 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.15)]'
+                        : 'border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
+                }`}>
+                    {toast.message}
+                </div>
+            )}
+
+            <div
+                className="fixed bottom-0 right-0 z-50 bg-slate-900 border-t border-white/[0.07] shadow-[0_-4px_24px_rgba(0,0,0,0.4)] px-4 py-3 transition-all duration-300 ease-out"
+                style={{ width: `calc(100% - ${sidebarWidth}px)` }}
+            >
+                {selectedFile && (
+                    <div className="flex items-center gap-2 mb-2 ml-12">
+                        <div className="flex items-center bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs px-2.5 py-1 rounded-full font-medium">
+                            <span className="truncate max-w-[150px]">{selectedFile.name}</span>
+                            <button
+                                onClick={() => setSelectedFile(null)}
+                                className="ml-2 text-amber-500/60 hover:text-amber-400 focus:outline-none"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex items-end gap-2 max-w-4xl mx-auto">
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={inputDisabled}
+                        className="w-9 h-9 shrink-0 rounded-lg bg-slate-800 border border-white/[0.08] hover:border-amber-500/25 hover:bg-amber-500/10 flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+                    >
+                        <Paperclip className="text-slate-400 group-hover:text-amber-400 w-[18px] h-[18px]" />
+                    </button>
+                    <input
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                    />
+
+                    <textarea
+                        ref={textareaRef}
+                        value={text}
+                        onChange={handleInput}
+                        onKeyDown={handleKeyDown}
+                        disabled={inputDisabled}
+                        placeholder="Ask about your document…"
+                        className="flex-1 min-h-[44px] bg-slate-950 border border-white/[0.08] rounded-xl font-sans text-sm text-slate-200 placeholder-slate-600 px-4 py-2.5 resize-none outline-none focus:border-amber-500/40 focus:ring-2 focus:ring-amber-500/15 transition-all duration-200 disabled:opacity-50"
+                        rows={1}
+                    />
+
+                    <button
+                        onClick={handleSend}
+                        disabled={inputDisabled || !text.trim()}
+                        style={
+                            isLoading
+                                ? { backgroundColor: 'transparent' }
+                                : { backgroundColor: '#f59e0b', color: '#0f172a' }
+                        }
+                        className={`shrink-0 font-heading font-bold text-sm px-5 h-10 rounded-xl transition-all duration-200 flex items-center justify-center min-w-[80px]
+                            ${!isLoading && text.trim() ? 'shadow-[0_0_16px_rgba(245,158,11,0.25)] hover:shadow-[0_0_24px_rgba(245,158,11,0.4)] hover:brightness-110' : ''}
+                            ${inputDisabled && !isLoading ? 'opacity-50 cursor-not-allowed shadow-none' : ''}
+                        `}
+                    >
+                        {isLoading ? (
+                            <div className="flex items-center justify-center gap-1">
+                                <div className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                <div className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                <div className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                            </div>
+                        ) : (
+                            <Send className="w-4 h-4" />
+                        )}
+                    </button>
+                </div>
+            </div>
+        </>
+    );
+};
+
+export default FileUploadBar;
