@@ -4,10 +4,11 @@ import tempfile
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, status
+from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
 from langchain_core.messages import HumanMessage
 
 from backend.core.config import settings
+from backend.core.auth import verify_supabase_jwt
 from backend.api.schemas import UploadResponse, ChatRequest, ChatResponse, SessionResponse
 from backend.agent.document_loader import load_and_split
 from backend.agent.vector_store import add_documents
@@ -17,9 +18,11 @@ from backend.agent.memory import get_all_sessions, session_delete
 router = APIRouter()
 agent = build_graph()
 
-
 @router.post("/upload", response_model=UploadResponse)
-async def upload_document(file: Annotated[UploadFile, File(...)]):
+async def upload_document(
+    file: Annotated[UploadFile, File(...)],
+    user: dict = Depends(verify_supabase_jwt)
+):
     if file.content_type != "application/pdf":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -60,9 +63,11 @@ async def upload_document(file: Annotated[UploadFile, File(...)]):
             detail=f"An error occurred while processing the file: {str(e)}"
         )
 
-
 @router.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(
+    request: ChatRequest,
+    user: dict = Depends(verify_supabase_jwt)
+):
     try:
         inputs = {
             "messages": [HumanMessage(content=request.message)],
@@ -90,9 +95,8 @@ async def chat(request: ChatRequest):
             detail=f"An error occurred while processing the chat request: {str(e)}"
         )
 
-
 @router.get("/sessions", response_model=SessionResponse)
-async def list_sessions():
+async def list_sessions(user: dict = Depends(verify_supabase_jwt)):
     try:
         sessions = get_all_sessions()
         return SessionResponse(sessions=sessions)
@@ -102,9 +106,11 @@ async def list_sessions():
             detail=f"An error occurred while retrieving sessions: {str(e)}"
         )
 
-
 @router.delete("/sessions/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_session(session_id: str):
+async def delete_session(
+    session_id: str,
+    user: dict = Depends(verify_supabase_jwt)
+):
     try:
         session_delete(session_id)
         return None

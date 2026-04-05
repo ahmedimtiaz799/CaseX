@@ -118,6 +118,11 @@
 }
 
 @layer base {
+  html, body, #root {
+    background-color: #020617;
+    margin: 0;
+    padding: 0;
+  }
   body {
     @apply font-sans bg-background text-slate-600 dark:text-slate-300;
   }

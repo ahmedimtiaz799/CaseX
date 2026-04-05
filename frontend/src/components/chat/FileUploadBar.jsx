@@ -71,7 +71,7 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
     return (
         <>
             {toast && (
-                <div className={`fixed top-4 right-4 z-[60] bg-slate-900 border text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 duration-300 ${
+                <div className={`fixed top-4 right-4 z-[60] bg-slate-900 border text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg ${
                     toast.isError
                         ? 'border-red-500/30 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.15)]'
                         : 'border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
@@ -81,11 +81,11 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
             )}
 
             <div
-                className="fixed bottom-0 right-0 z-50 bg-slate-900 border-t border-white/[0.07] shadow-[0_-4px_24px_rgba(0,0,0,0.4)] px-4 py-3 transition-all duration-300 ease-out"
+                className="fixed bottom-0 right-0 z-50 bg-slate-900 border-t border-white/[0.12] shadow-[0_-4px_24px_rgba(0,0,0,0.4)] py-5 transition-all duration-300 ease-out"
                 style={{ width: `calc(100% - ${sidebarWidth}px)` }}
             >
                 {selectedFile && (
-                    <div className="flex items-center gap-2 mb-2 ml-12">
+                    <div className="flex items-center gap-2 mb-2 w-full max-w-2xl mx-auto px-6">
                         <div className="flex items-center bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs px-2.5 py-1 rounded-full font-medium">
                             <span className="truncate max-w-[150px]">{selectedFile.name}</span>
                             <button
@@ -98,14 +98,7 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
                     </div>
                 )}
 
-                <div className="flex items-end gap-2 max-w-4xl mx-auto">
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={inputDisabled}
-                        className="w-9 h-9 shrink-0 rounded-lg bg-slate-800 border border-white/[0.08] hover:border-amber-500/25 hover:bg-amber-500/10 flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
-                    >
-                        <Paperclip className="text-slate-400 group-hover:text-amber-400 w-[18px] h-[18px]" />
-                    </button>
+                <div className="flex items-center gap-3 w-full max-w-2xl mx-auto px-6">
                     <input
                         type="file"
                         accept=".pdf"
@@ -114,16 +107,26 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
                         onChange={handleFileUpload}
                     />
 
-                    <textarea
-                        ref={textareaRef}
-                        value={text}
-                        onChange={handleInput}
-                        onKeyDown={handleKeyDown}
-                        disabled={inputDisabled}
-                        placeholder="Ask about your document…"
-                        className="flex-1 min-h-[44px] bg-slate-950 border border-white/[0.08] rounded-xl font-sans text-sm text-slate-200 placeholder-slate-600 px-4 py-2.5 resize-none outline-none focus:border-amber-500/40 focus:ring-2 focus:ring-amber-500/15 transition-all duration-200 disabled:opacity-50"
-                        rows={1}
-                    />
+                    <div className="flex-1 flex items-center bg-slate-950 border border-white/[0.08] rounded-xl focus-within:border-amber-500/40 focus-within:ring-2 focus-within:ring-amber-500/15 transition-all duration-200 min-h-[44px]">
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={inputDisabled}
+                            className="shrink-0 w-9 h-9 ml-1 rounded-lg hover:bg-amber-500/10 flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
+                        >
+                            <Paperclip className="text-slate-400 group-hover:text-amber-400 w-[18px] h-[18px]" />
+                        </button>
+
+                        <textarea
+                            ref={textareaRef}
+                            value={text}
+                            onChange={handleInput}
+                            onKeyDown={handleKeyDown}
+                            disabled={inputDisabled}
+                            placeholder="Ask about your document…"
+                            className="flex-1 min-h-[44px] bg-transparent font-sans text-sm text-slate-200 placeholder-slate-400 px-3 py-[11px] resize-none outline-none disabled:opacity-50"
+                            rows={1}
+                        />
+                    </div>
 
                     <button
                         onClick={handleSend}
@@ -133,7 +136,7 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
                                 ? { backgroundColor: 'transparent' }
                                 : { backgroundColor: '#f59e0b', color: '#0f172a' }
                         }
-                        className={`shrink-0 font-heading font-bold text-sm px-5 h-10 rounded-xl transition-all duration-200 flex items-center justify-center min-w-[80px]
+                        className={`shrink-0 font-heading font-bold text-sm px-5 h-[44px] rounded-xl transition-all duration-200 flex items-center justify-center min-w-[44px] cursor-pointer
                             ${!isLoading && text.trim() ? 'shadow-[0_0_16px_rgba(245,158,11,0.25)] hover:shadow-[0_0_24px_rgba(245,158,11,0.4)] hover:brightness-110' : ''}
                             ${inputDisabled && !isLoading ? 'opacity-50 cursor-not-allowed shadow-none' : ''}
                         `}

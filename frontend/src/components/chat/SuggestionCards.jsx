@@ -17,13 +17,13 @@ const SuggestionCards = ({ onSendMessage }) => {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: shouldReduceMotion ? 0 : 0.1,
+        staggerChildren: shouldReduceMotion ? 0 : 0.08,
       },
     },
   }), [shouldReduceMotion]);
 
   const itemVariants = useMemo(() => ({
-    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 12 },
+    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 10 },
     show: {
       opacity: 1,
       y: 0,
@@ -32,29 +32,30 @@ const SuggestionCards = ({ onSendMessage }) => {
   }), [shouldReduceMotion]);
 
   return (
-    <div className="relative bg-slate-950 flex flex-col items-center justify-center flex-1 px-6 py-16 overflow-hidden">
-
-      <div
-        className="absolute inset-0 z-0 pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-          opacity: 0.07,
-        }}
-      />
+    <div className="relative flex flex-col items-center justify-center flex-1 px-6 py-16 overflow-hidden">
 
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-[500px] z-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse, rgba(245,158,11,0.08) 0%, transparent 65%)',
+          background: 'radial-gradient(ellipse, rgba(245,158,11,0.09) 0%, transparent 65%)',
+          transform: 'translateZ(0)',
         }}
       />
 
-      <div className="relative z-10 w-full max-w-lg mx-auto">
-        <h2 className="font-heading font-bold text-white text-xl text-center mb-2">
+      <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center">
+
+        <div
+          className="inline-flex items-center gap-2 mb-5 px-3 py-1 rounded-full border border-amber-500/25 text-amber-400 text-xs font-semibold uppercase tracking-widest"
+          style={{ backgroundColor: 'rgba(245,158,11,0.08)' }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+          CaseX
+        </div>
+
+        <h2 className="font-heading font-bold text-white text-2xl text-center mb-2 tracking-tight">
           What would you like to know?
         </h2>
-        <p className="font-sans text-slate-400 text-sm text-center mb-10">
+        <p className="font-sans text-slate-400 text-sm text-center mb-10 max-w-sm">
           Upload a document, then ask anything about it.
         </p>
 
@@ -62,7 +63,7 @@ const SuggestionCards = ({ onSendMessage }) => {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 gap-3"
+          className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full items-start"
         >
           {CARDS.map((card) => {
             const Icon = card.icon;
@@ -72,12 +73,12 @@ const SuggestionCards = ({ onSendMessage }) => {
                 variants={itemVariants}
                 onClick={() => onSendMessage(card.text)}
                 type="button"
-                className="group bg-slate-900/60 border border-white/[0.07] rounded-2xl p-4 cursor-pointer hover:border-amber-500/25 hover:bg-slate-900/90 hover:shadow-[0_0_24px_rgba(245,158,11,0.08)] transition-all duration-300 text-left"
+                className="group bg-slate-900/60 border border-white/[0.07] rounded-2xl p-4 flex flex-col items-start cursor-pointer hover:border-amber-500/25 hover:bg-slate-900/90 hover:shadow-[0_0_24px_rgba(245,158,11,0.08)] transition-all duration-300 text-left w-full"
               >
-                <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-3 group-hover:bg-amber-500/15 transition-colors duration-200">
-                  <Icon className="text-amber-400 w-[18px] h-[18px]" />
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-2 group-hover:bg-amber-500/15 transition-colors duration-200 shrink-0">
+                  <Icon className="text-amber-400 w-4 h-4" />
                 </div>
-                <p className="font-sans text-sm text-slate-300 font-medium leading-relaxed">
+                <p className="font-sans text-sm text-slate-300 font-medium leading-snug">
                   {card.text}
                 </p>
               </motion.button>

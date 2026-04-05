@@ -8,4 +8,6 @@ __pycache__/
 # Virtual environment
 .venv/
 venv/
-backend/venv/
+backend/venv/.vscode/
+import-check.txt
+root-requirements.txt

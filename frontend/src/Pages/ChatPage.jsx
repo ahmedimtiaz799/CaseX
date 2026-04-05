@@ -67,12 +67,14 @@ const ChatPage = () => {
 
     return (
         <div className="flex h-screen bg-slate-950 overflow-hidden font-sans relative">
+
             <div
                 className="absolute inset-0 z-0 pointer-events-none"
                 style={{
                     backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
                     backgroundSize: '28px 28px',
-                    opacity: 0.07
+                    opacity: 0.13,
+                    transform: 'translateZ(0)',
                 }}
             />
 
@@ -92,14 +94,16 @@ const ChatPage = () => {
                 className="flex flex-col flex-1 relative z-10 h-screen transition-all duration-300 ease-out"
                 style={{ marginLeft: `${currentSidebarWidth}px` }}
             >
-                <div className="md:hidden h-16 border-b border-white/[0.07] bg-slate-900/80 backdrop-blur-md flex items-center px-4 shrink-0 z-20">
+                <div className="md:hidden h-16 border-b border-white/[0.07] bg-slate-900 flex items-center px-4 shrink-0 z-20">
                     <button
                         onClick={() => setIsMobileOpen(true)}
                         className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center hover:bg-amber-500/15 transition-colors"
                     >
                         <Menu className="w-5 h-5" />
                     </button>
-                    <div className="ml-4 font-heading font-bold text-white tracking-wide">CaseX</div>
+                    <div className="ml-4 font-heading font-bold text-white tracking-wide">
+                        Case<span className="text-amber-500">X</span>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-10 pb-32">
@@ -120,7 +124,7 @@ const ChatPage = () => {
                                 ))}
 
                                 {isLoading && (
-                                    <div className="flex justify-start items-end gap-2 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                    <div className="flex justify-start items-end gap-2 mb-6">
                                         <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
                                             <ShieldCheck className="text-amber-400 w-3.5 h-3.5" />
                                         </div>

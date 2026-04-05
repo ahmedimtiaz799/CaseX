@@ -73,7 +73,7 @@ const CTASection = () => {
           transition={{ duration: dur(0.5), ease: 'easeOut', delay: dur(0.22) }}
         >
           <button
-            onClick={() => window.location.href = '/signup'}
+            onClick={() => window.location.href = '/login'}
             style={{ backgroundColor: '#f59e0b', color: '#0f172a' }}
             className="h-12 px-8 rounded-xl font-bold text-sm tracking-wide hover:brightness-110 transition-all duration-200 cursor-pointer shadow-[0_0_32px_rgba(245,158,11,0.4)] hover:shadow-[0_0_48px_rgba(245,158,11,0.55)]"
           >

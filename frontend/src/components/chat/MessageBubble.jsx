@@ -35,7 +35,7 @@ const MessageBubble = ({ message }) => {
         </div>
 
         {!isUser && message.sources?.length > 0 && (
-          <div className="mt-2 flex flex-col items-start w-full">
+          <div className="mt-2.5 flex flex-col items-start w-full">
             <button
               onClick={() => setShowSources(prev => !prev)}
               className="text-xs text-slate-500 font-medium cursor-pointer hover:text-amber-400 transition-colors flex items-center gap-1.5"
@@ -49,12 +49,12 @@ const MessageBubble = ({ message }) => {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="mt-2 space-y-1 w-full"
+                className="mt-2 space-y-1.5 w-full"
               >
                 {message.sources.map((source, idx) => (
                   <div
                     key={source.id ?? idx}
-                    className="text-xs text-slate-400 bg-slate-900 border border-white/[0.07] rounded-xl px-3 py-2"
+                    className="text-xs text-slate-400 bg-slate-900 border border-white/[0.07] rounded-xl px-3 py-2.5"
                   >
                     {(source.page || source.section) && (
                       <span className="inline-flex items-center text-[11px] font-semibold text-emerald-400 mr-2">

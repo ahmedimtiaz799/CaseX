@@ -97,7 +97,7 @@ const HeroSection = () => {
               transition={{ duration: dur(0.55), ease, delay: dur(0.35) }}
             >
               <button
-                onClick={() => window.location.href = '/signup'}
+                onClick={() => window.location.href = '/login'}
                 style={{ backgroundColor: '#f59e0b', color: '#0f172a' }}
                 className="h-12 px-7 rounded-xl font-bold text-sm tracking-wide hover:brightness-110 transition-all duration-200 cursor-pointer shadow-[0_0_28px_rgba(245,158,11,0.35)] hover:shadow-[0_0_40px_rgba(245,158,11,0.5)]"
               >
