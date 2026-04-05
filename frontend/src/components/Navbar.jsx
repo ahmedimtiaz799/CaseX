@@ -1,20 +1,19 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Scale } from 'lucide-react';
+import { Scale, ArrowRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const isLoginPage = location.pathname === '/login';
 
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/');
+  const handleGoToApp = () => {
+    navigate('/chat');
     setIsOpen(false);
   };
 
@@ -74,11 +73,11 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-4">
           {user ? (
             <button
-              onClick={handleLogout}
-              style={{ color: '#f59e0b' }}
-              className="text-sm font-semibold border border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10 px-4 h-9 rounded-lg transition-all duration-200"
+              onClick={handleGoToApp}
+              className="flex items-center gap-2 text-sm font-sans font-semibold border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-slate-900 px-5 h-9 rounded-lg transition-all duration-200 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
             >
-              Logout
+              <span>Go to Chat</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           ) : !isLoginPage && (
             <Button
@@ -134,11 +133,11 @@ const Navbar = () => {
 
           {user ? (
             <button
-              onClick={handleLogout}
-              style={{ color: '#f59e0b' }}
-              className="text-sm font-semibold border border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10 w-full mt-2 h-10 rounded-lg transition-all duration-200"
+              onClick={handleGoToApp}
+              className="flex justify-center items-center gap-2 text-sm font-sans font-semibold border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-slate-900 w-full mt-2 h-10 rounded-lg transition-all duration-200 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
             >
-              Logout
+              <span>Go to Chat</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           ) : !isLoginPage && (
             <Button

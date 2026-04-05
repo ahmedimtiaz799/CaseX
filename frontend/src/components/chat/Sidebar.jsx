@@ -1,5 +1,7 @@
 import React from 'react';
-import { ChevronRight, Plus, Trash2, MessageSquare, X, Scale } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronRight, Plus, Trash2, MessageSquare, X, Scale, LogOut } from 'lucide-react';
+import { useAuth } from "../../hooks/useAuth";
 
 const Sidebar = ({
     sessions = [],
@@ -12,11 +14,18 @@ const Sidebar = ({
     isMobileOpen,
     setIsMobileOpen
 }) => {
+    const { signOut } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await signOut();
+        navigate('/');
+    };
 
     const Logo = () => (
         <div className="flex items-center gap-2.5 cursor-pointer">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg border border-amber-500/20 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.15)] hover:bg-amber-500/20 hover:border-amber-500/30 hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all duration-300 shrink-0">
-<Scale className="w-[18px] h-[18px] text-amber-400 cursor-pointer" strokeWidth={2} />
+                <Scale className="w-[18px] h-[18px] text-amber-400 cursor-pointer" strokeWidth={2} />
             </div>
             <span className="font-heading font-extrabold text-xl text-white tracking-wide">
                 Case<span className="text-amber-500">X</span>
@@ -78,6 +87,21 @@ const Sidebar = ({
         </div>
     );
 
+    const renderLogoutButton = (expanded) => (
+        <div className="p-3 shrink-0 border-t border-white/[0.12] mt-auto">
+            <button
+                onClick={handleLogout}
+                className={`group cursor-pointer flex items-center rounded-xl transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] ${
+                    expanded ? 'px-3 py-2.5 w-full gap-3' : 'py-2 justify-center w-full'
+                }`}
+                title="Logout"
+            >
+                <LogOut className="w-[18px] h-[18px] shrink-0" />
+                {expanded && <span className="text-sm font-sans font-medium">Log out</span>}
+            </button>
+        </div>
+    );
+
     return (
         <>
             <aside
@@ -116,6 +140,7 @@ const Sidebar = ({
                 </div>
 
                 {renderSessionList(isExpanded)}
+                {renderLogoutButton(isExpanded)}
             </aside>
 
             <div
@@ -155,6 +180,7 @@ const Sidebar = ({
                 </div>
 
                 {renderSessionList(true)}
+                {renderLogoutButton(true)}
             </aside>
         </>
     );

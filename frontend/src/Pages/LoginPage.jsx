@@ -30,11 +30,12 @@ export default function LoginPage() {
         }
         const { error } = await signUp(email, password);
         if (error) throw error;
+        navigate('/chat');
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
+        navigate('/chat');
       }
-      navigate('/chat');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -44,7 +45,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col relative overflow-y-auto">
-
       <div
         style={{
           backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)',
