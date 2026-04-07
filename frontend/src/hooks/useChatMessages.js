@@ -1,28 +1,39 @@
 import { useState, useCallback } from "react";
-import { supabase } from '../lib/supabaseClient';
 
-export function useChatMessages() {
+export function useChatMessages(token) {
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const apiUrl = import.meta.env.VITE_API_URL;
+
     const fetchMessages = useCallback(async (sessionId) => {
         if (!sessionId) return;
-        
+        setIsLoading(true);
+        setError(null);
         try {
-            const { data, error: fetchError } = await supabase
-                .from('chat_messages')
-                .select('*')
-                .eq('session_id', sessionId)
-                .order('created_at', { ascending: true });
-
-            if (fetchError) throw fetchError;
-            setMessages(data || []);
+            const response = await fetch(`${apiUrl}/api/v1/sessions/${sessionId}/messages`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.ok) throw new Error("Failed to fetch messages");
+            const data = await response.json();
+            const formatted = (data.messages || []).map((msg) => ({
+                id: msg.id || crypto.randomUUID(),
+                session_id: msg.session_id,
+                role: msg.role,
+                content: msg.content,
+                sources: msg.sources || []
+            }));
+            setMessages(formatted);
         } catch (err) {
-            console.error('Error fetching messages:', err.message);
-            setError('Failed to load chat history.');
+            console.error("Fetch Messages Error", err);
+            setError('Failed to load messages.');
+        } finally {
+            setIsLoading(false);
         }
-    }, []);
+    }, [token, apiUrl]);
 
     const sendMessage = useCallback(async (sessionId, text) => {
         if (!text.trim() || !sessionId) return;
@@ -34,48 +45,32 @@ export function useChatMessages() {
             content: text,
             sources: []
         };
-        
+
         setMessages(prev => [...prev, optimisticUserMsg]);
         setIsLoading(true);
         setError(null);
 
         try {
-            const { error: dbError } = await supabase
-                .from('chat_messages')
-                .insert([{ session_id: sessionId, role: 'user', content: text }]);
-
-            if (dbError) throw dbError;
-
-            const { data: { session } } = await supabase.auth.getSession();
-
-            const response = await fetch('http://localhost:8000/api/v1/chat', {
+            const response = await fetch(`${apiUrl}/api/v1/chat`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.access_token}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ session_id: sessionId, message: text }),
             });
 
-            if (!response.ok) {
-                throw new Error("Failed to process message");
-            }
-            
+            if (!response.ok) throw new Error("Failed to process message");
+
             const data = await response.json();
-            const aiContent = data.reply || data.content;
 
-            const { data: aiMessage, error: aiDbError } = await supabase
-                .from('chat_messages')
-                .insert([{
-                    session_id: sessionId,
-                    role: 'assistant',
-                    content: aiContent,
-                    sources: data.sources || []
-                }])
-                .select()
-                .single();
-
-            if (aiDbError) throw aiDbError;
+            const aiMessage = {
+                id: crypto.randomUUID(),
+                session_id: sessionId,
+                role: 'assistant',
+                content: data.reply,
+                sources: data.sources || []
+            };
 
             setMessages(prev => [...prev, aiMessage]);
         } catch (err) {
@@ -84,7 +79,7 @@ export function useChatMessages() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [token, apiUrl]);
 
     const clearMessages = useCallback(() => {
         setMessages([]);
@@ -95,8 +90,8 @@ export function useChatMessages() {
         messages,
         isLoading,
         error,
-        fetchMessages,
         sendMessage,
         clearMessages,
+        fetchMessages,
     };
 }

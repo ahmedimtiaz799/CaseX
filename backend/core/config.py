@@ -1,19 +1,21 @@
-import os
-from dotenv import load_dotenv
-from dataclasses import dataclass
+from pydantic_settings import BaseSettings
 
-load_dotenv()
+class Settings(BaseSettings):
+    
+    GEMINI_API_KEY: str
+    DATABASE_URL: str
+    SUPABASE_URL: str
+    SUPABASE_SERVICE_ROLE_KEY: str
+    LANGFUSE_PUBLIC_KEY: str
+    LANGFUSE_SECRET_KEY: str
 
-@dataclass
-class Settings:
-    GEMINI_API_KEY: str | None = os.getenv("GEMINI_API_KEY")
-    DATABASE_URL: str | None = os.getenv("DATABASE_URL")
-    COLLECTION_NAME: str | None = os.getenv("COLLECTION_NAME", "casex_vectors")
-    MAX_FILE_SIZE_MB: int = int(os.getenv("MAX_FILE_SIZE_MB", 10))
-    LANGFUSE_SECRET_KEY: str | None = os.getenv("LANGFUSE_SECRET_KEY")
-    LANGFUSE_PUBLIC_KEY: str | None = os.getenv("LANGFUSE_PUBLIC_KEY")
-    LANGFUSE_HOST: str | None = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
-    SUPABASE_URL: str | None = os.getenv("SUPABASE_URL")
-    SUPABASE_SERVICE_ROLE_KEY: str | None = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    
+    COLLECTION_NAME: str = "casex_vectors"
+    MAX_FILE_SIZE_MB: int = 10
+    LANGFUSE_HOST: str = "https://cloud.langfuse.com"
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
 settings = Settings()

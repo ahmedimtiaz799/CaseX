@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 
 export function useAuth() {
   const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const signUp = async (email, password) => {
@@ -19,12 +20,14 @@ export function useAuth() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
@@ -36,7 +39,8 @@ export function useAuth() {
   }, []);
 
   return { 
-    user, 
+    user,
+    token: session?.access_token ?? null,
     loading, 
     signUp, 
     signIn, 

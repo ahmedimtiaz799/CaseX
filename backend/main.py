@@ -4,9 +4,8 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from backend.agent.vector_store import init_vector_store
-from backend.api.routes import router as api_router
+from agent.vector_store import init_vector_store
+from api.routes import router as api_router
 
 load_dotenv()
 

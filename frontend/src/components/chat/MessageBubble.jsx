@@ -63,7 +63,7 @@ const MessageBubble = ({ message }) => {
                         {source.section ? `, Sec ${source.section}` : ''}
                       </span>
                     )}
-                    <span className="leading-relaxed">{source.text}</span>
+                    <span className="leading-relaxed">{source.source}</span>
                   </div>
                 ))}
               </motion.div>

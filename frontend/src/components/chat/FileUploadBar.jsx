@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { Paperclip, Send, X } from 'lucide-react';
 
-const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
+const FileUploadBar = ({ onSendMessage, onUploadSuccess, token, isLoading, sidebarWidth = 0, hasSession }) => {
     const [text, setText] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [toast, setToast] = useState(null);
     const textareaRef = useRef(null);
     const fileInputRef = useRef(null);
+
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     const showToast = (message, isError = false) => {
         setToast({ message, isError });
@@ -28,7 +30,7 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
     };
 
     const handleSend = () => {
-        if (!text.trim() || isLoading || isUploading) return;
+        if (!text.trim() || isLoading || isUploading || !hasSession) return;
         onSendMessage(text, selectedFile);
         setText('');
         setSelectedFile(null);
@@ -41,6 +43,12 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        if (file.type !== 'application/pdf') {
+            showToast('Only PDF files are allowed.', true);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
         setSelectedFile(file);
         setIsUploading(true);
 
@@ -48,13 +56,18 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await fetch('http://localhost:8000/api/v1/upload', {
+            const response = await fetch(`${apiUrl}/api/v1/upload`, {
                 method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
                 body: formData,
             });
 
             if (!response.ok) throw new Error('Upload failed');
 
+            const data = await response.json();
+            onUploadSuccess(data.session_id);
             showToast('Document uploaded successfully');
         } catch (error) {
             console.error('Error uploading file:', error);
@@ -67,6 +80,7 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
     };
 
     const inputDisabled = isLoading || isUploading;
+    const sendDisabled = inputDisabled || !text.trim() || !hasSession;
 
     return (
         <>
@@ -122,7 +136,7 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
                             onChange={handleInput}
                             onKeyDown={handleKeyDown}
                             disabled={inputDisabled}
-                            placeholder="Ask about your document…"
+                            placeholder={hasSession ? 'Ask about your document…' : 'Upload a PDF document to start…'}
                             className="flex-1 min-h-[44px] bg-transparent font-sans text-sm text-slate-200 placeholder-slate-400 px-3 py-[11px] resize-none outline-none disabled:opacity-50"
                             rows={1}
                         />
@@ -130,15 +144,14 @@ const FileUploadBar = ({ onSendMessage, isLoading, sidebarWidth = 0 }) => {
 
                     <button
                         onClick={handleSend}
-                        disabled={inputDisabled || !text.trim()}
+                        disabled={sendDisabled}
                         style={
                             isLoading
                                 ? { backgroundColor: 'transparent' }
                                 : { backgroundColor: '#f59e0b', color: '#0f172a' }
                         }
-                        className={`shrink-0 font-heading font-bold text-sm px-5 h-[44px] rounded-xl transition-all duration-200 flex items-center justify-center min-w-[44px] cursor-pointer
-                            ${!isLoading && text.trim() ? 'shadow-[0_0_16px_rgba(245,158,11,0.25)] hover:shadow-[0_0_24px_rgba(245,158,11,0.4)] hover:brightness-110' : ''}
-                            ${inputDisabled && !isLoading ? 'opacity-50 cursor-not-allowed shadow-none' : ''}
+                        className={`shrink-0 font-heading font-bold text-sm px-5 h-[44px] rounded-xl transition-all duration-200 flex items-center justify-center min-w-[44px]
+                            ${!sendDisabled ? 'cursor-pointer shadow-[0_0_16px_rgba(245,158,11,0.25)] hover:shadow-[0_0_24px_rgba(245,158,11,0.4)] hover:brightness-110' : 'opacity-50 cursor-not-allowed shadow-none'}
                         `}
                     >
                         {isLoading ? (

@@ -1,33 +1,36 @@
-import os
 from typing import List
 from langchain_core.documents import Document
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_postgres.vectorstores import PGVector
 from langchain_core.vectorstores import VectorStoreRetriever
+from core.config import settings
+
+_vector_store: PGVector | None = None
 
 def init_vector_store() -> PGVector:
-    """Initialize the vector store and expecting the PGVector object as an output."""
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/text-embedding-004"
-    )
-    connection_string = os.getenv("DATABASE_URL")
-    collection_name = os.getenv("COLLECTION_NAME", "CaseX")
-    if not connection_string:
-        raise ValueError("DATABASE_URL environment variable is not set.")
-    vector_store = PGVector(
+    global _vector_store
+    if _vector_store is not None:
+        return _vector_store
+
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+    _vector_store = PGVector(
         embeddings=embeddings,
-        connection=connection_string,
-        collection_name=collection_name
+        connection=settings.DATABASE_URL,
+        collection_name=settings.COLLECTION_NAME
     )
-    return vector_store
+    return _vector_store
 
 def add_documents(docs: List[Document]) -> None:
-    """Adding Documents to the vector store."""
     vector_store = init_vector_store()
     vector_store.add_documents(docs)
     print(f"Successfully added {len(docs)} chunks to the vector store.")
 
-def get_retriever(k: int = 5) -> VectorStoreRetriever:
-    """Retrieving the first 5 results from the vector store."""
+def get_retriever(session_id: str, k: int = 3) -> VectorStoreRetriever:
     vector_store = init_vector_store()
-    return vector_store.as_retriever(search_kwargs={"k": k})
+    return vector_store.as_retriever(
+        search_kwargs={
+            "k": k,
+            "filter": {"session_id": session_id}
+        }
+    )

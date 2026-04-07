@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 import { useChatSessions } from '../hooks/useChatSessions';
 import { useChatMessages } from '../hooks/useChatMessages';
 import Sidebar from '../components/chat/Sidebar';
@@ -12,23 +13,25 @@ const ChatPage = () => {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const messagesEndRef = useRef(null);
-    const pendingMessageRef = useRef(null);
+
+    const { token } = useAuth();
 
     const {
         sessions,
         activeSessionId,
         fetchSessions,
-        createNewSession,
         deleteSession,
         setActive
-    } = useChatSessions();
+    } = useChatSessions(token);
 
     const {
         messages,
         isLoading,
         error,
-        sendMessage
-    } = useChatMessages();
+        sendMessage,
+        clearMessages,
+        fetchMessages
+    } = useChatMessages(token);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -38,8 +41,16 @@ const ChatPage = () => {
     }, []);
 
     useEffect(() => {
-        fetchSessions();
-    }, [fetchSessions]);
+        if (token) fetchSessions();
+    }, [token, fetchSessions]);
+
+    useEffect(() => {
+        if (activeSessionId) {
+            fetchMessages(activeSessionId);
+        } else {
+            clearMessages();
+        }
+    }, [activeSessionId]);
 
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -47,20 +58,19 @@ const ChatPage = () => {
         }
     }, [messages, isLoading]);
 
-    useEffect(() => {
-        if (activeSessionId && pendingMessageRef.current) {
-            sendMessage(activeSessionId, pendingMessageRef.current);
-            pendingMessageRef.current = null;
-        }
-    }, [activeSessionId]);
+    const handleUploadSuccess = (sessionId) => {
+        setActive(sessionId);
+        fetchSessions();
+    };
+
+    const handleNewChat = () => {
+        setActive(null);
+        clearMessages();
+    };
 
     const handleSendMessage = (text) => {
-        if (activeSessionId) {
-            sendMessage(activeSessionId, text);
-        } else {
-            pendingMessageRef.current = text;
-            createNewSession();
-        }
+        if (!activeSessionId) return;
+        sendMessage(activeSessionId, text);
     };
 
     const currentSidebarWidth = isMobile ? 0 : (isExpanded ? 260 : 60);
@@ -81,7 +91,7 @@ const ChatPage = () => {
             <Sidebar
                 sessions={sessions}
                 activeSessionId={activeSessionId}
-                createNewSession={createNewSession}
+                onNewChat={handleNewChat}
                 deleteSession={deleteSession}
                 setActive={setActive}
                 isExpanded={isExpanded}
@@ -106,7 +116,7 @@ const ChatPage = () => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-10 pb-32">
+                <div className="flex-1 overflow-y-scroll px-4 py-6 md:px-8 md:py-10 pb-32">
                     <div className="max-w-4xl mx-auto w-full flex flex-col min-h-full">
 
                         {error && (
@@ -116,11 +126,15 @@ const ChatPage = () => {
                         )}
 
                         {messages.length === 0 ? (
-                            <SuggestionCards onSendMessage={handleSendMessage} />
+                            <SuggestionCards onSendMessage={handleSendMessage}
+                            hasSession={!!activeSessionId} />
                         ) : (
                             <div className="space-y-6">
                                 {messages.map((msg) => (
-                                    <MessageBubble key={msg.id} message={msg} />
+                                    <MessageBubble
+                                        key={msg.id}
+                                        message={msg}
+                                    />
                                 ))}
 
                                 {isLoading && (
@@ -144,8 +158,11 @@ const ChatPage = () => {
 
                 <FileUploadBar
                     onSendMessage={handleSendMessage}
+                    onUploadSuccess={handleUploadSuccess}
+                    token={token}
                     isLoading={isLoading}
                     sidebarWidth={currentSidebarWidth}
+                    hasSession={!!activeSessionId}
                 />
             </main>
         </div>

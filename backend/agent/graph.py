@@ -3,43 +3,52 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import BaseMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
 from langchain_core.runnables.history import RunnableWithMessageHistory
-
-from backend.agent.vector_store import get_retriever
-from backend.agent.memory import get_chat_history
 from langfuse.langchain import CallbackHandler
-from backend.core.config import settings
+
+from agent.vector_store import get_retriever
+from agent.memory import get_chat_history
+from core.config import settings
 
 
 class State(TypedDict):
     messages: list[BaseMessage]
     context: str
     session_id: str
+    sources: list[dict]
+
+
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    api_key=settings.GEMINI_API_KEY,
+    temperature=0
+)
 
 
 def retrieve(state: State) -> dict:
-    """Retrieve relevant information from the vector store based on the user's query."""
-    retriever = get_retriever()
-    latest_message = state['messages'][-1]
+    session_id = state.get("session_id", "")
+    retriever = get_retriever(session_id=session_id)
+    latest_message = state["messages"][-1]
     docs = retriever.invoke(latest_message.content)
-    context = "\n\n".join(doc.page_content for doc in docs)
-    return {"context": context}
+
+    context = "\n\n".join(
+        f"[Source: {doc.metadata.get('source', 'unknown')}, Page: {doc.metadata.get('page', '?')}]\n{doc.page_content}"
+        for doc in docs
+    )
+    sources = [
+        {
+            "source": doc.metadata.get("source", "unknown"),
+            "page": doc.metadata.get("page", None)
+        }
+        for doc in docs
+    ]
+    return {"context": context, "sources": sources}
 
 
 def generate(state: State) -> dict:
-    """AI will generate a response based on the retrieved information and the user's query."""
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
-        temperature=0
-    )
     context = state.get("context", "")
-    latest_question = state['messages'][-1].content
+    latest_question = state["messages"][-1].content
 
-    langfuse_handler = CallbackHandler(
-        secret_key=settings.LANGFUSE_SECRET_KEY,
-        public_key=settings.LANGFUSE_PUBLIC_KEY,
-        host=settings.LANGFUSE_HOST,
-        session_id=state.get("session_id", "unknown-session")
-    )
+    langfuse_handler = CallbackHandler()
 
     system_prompt = (
         """You are CaseX, an experienced legal contract analyst skilled in reviewing and interpreting legal documents, agreements, and contracts.
@@ -61,6 +70,8 @@ I am unable to find sufficient information in the provided documents to answer t
 
 6. Where relevant, refer to specific clauses, sections, or wording from the document to support your explanation.
 
+7. Do NOT use any markdown formatting in your response. No asterisks, no bold, no bullet points, no headers. Write in plain flowing paragraphs only.
+
 This system provides document analysis assistance and does not replace professional legal advice.
 
 Document Context:
@@ -70,10 +81,9 @@ User Question:
 {question}"""
     ).format(context=context, question=latest_question)
 
-    full_messages = [SystemMessage(content=system_prompt)] + state['messages']
+    full_messages = [SystemMessage(content=system_prompt)] + state["messages"]
     response = llm.invoke(full_messages, config={"callbacks": [langfuse_handler]})
-    result = state['messages'] + [response]
-    return {"messages": result}
+    return {"messages": state["messages"] + [response]}
 
 
 workflow = StateGraph(State)
@@ -87,11 +97,8 @@ app = workflow.compile()
 
 
 def build_graph():
-    """Add memory to the agent so it remembers the conversation history and return the final agent to be used by the API."""
-    app_memory = RunnableWithMessageHistory(
+    return RunnableWithMessageHistory(
         app,
         get_chat_history,
         input_messages_key="messages",
-        history_messages_key="messages"
     )
-    return app_memory

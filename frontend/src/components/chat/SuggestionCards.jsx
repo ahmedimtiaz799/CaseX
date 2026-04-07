@@ -9,7 +9,7 @@ const CARDS = [
   { id: 'risky', text: 'Flag any unusual or risky terms', icon: ShieldAlert },
 ];
 
-const SuggestionCards = ({ onSendMessage }) => {
+const SuggestionCards = ({ onSendMessage, hasSession }) => {
   const shouldReduceMotion = useReducedMotion();
 
   const containerVariants = useMemo(() => ({
@@ -33,7 +33,6 @@ const SuggestionCards = ({ onSendMessage }) => {
 
   return (
     <div className="relative flex flex-col items-center justify-center flex-1 px-6 py-16 overflow-hidden">
-
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-[500px] z-0 pointer-events-none"
         style={{
@@ -43,7 +42,6 @@ const SuggestionCards = ({ onSendMessage }) => {
       />
 
       <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center">
-
         <div
           className="inline-flex items-center gap-2 mb-5 px-3 py-1 rounded-full border border-amber-500/25 text-amber-400 text-xs font-semibold uppercase tracking-widest"
           style={{ backgroundColor: 'rgba(245,158,11,0.08)' }}
@@ -56,7 +54,7 @@ const SuggestionCards = ({ onSendMessage }) => {
           What would you like to know?
         </h2>
         <p className="font-sans text-slate-400 text-sm text-center mb-10 max-w-sm">
-          Upload a document, then ask anything about it.
+          {hasSession ? 'Ask anything about your uploaded document.' : 'Upload a document first, then ask anything about it.'}
         </p>
 
         <motion.div
@@ -71,9 +69,14 @@ const SuggestionCards = ({ onSendMessage }) => {
               <motion.button
                 key={card.id}
                 variants={itemVariants}
-                onClick={() => onSendMessage(card.text)}
+                onClick={() => hasSession && onSendMessage(card.text)}
                 type="button"
-                className="group bg-slate-900/60 border border-white/[0.07] rounded-2xl p-4 flex flex-col items-start cursor-pointer hover:border-amber-500/25 hover:bg-slate-900/90 hover:shadow-[0_0_24px_rgba(245,158,11,0.08)] transition-all duration-300 text-left w-full"
+                disabled={!hasSession}
+                className={`group bg-slate-900/60 border border-white/[0.07] rounded-2xl p-4 flex flex-col items-start transition-all duration-300 text-left w-full
+                  ${hasSession
+                    ? 'cursor-pointer hover:border-amber-500/25 hover:bg-slate-900/90 hover:shadow-[0_0_24px_rgba(245,158,11,0.08)]'
+                    : 'cursor-not-allowed opacity-40'
+                  }`}
               >
                 <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-2 group-hover:bg-amber-500/15 transition-colors duration-200 shrink-0">
                   <Icon className="text-amber-400 w-4 h-4" />

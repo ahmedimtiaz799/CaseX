@@ -6,7 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 const Sidebar = ({
     sessions = [],
     activeSessionId,
-    createNewSession,
+    onNewChat,
     deleteSession,
     setActive,
     isExpanded,
@@ -19,7 +19,7 @@ const Sidebar = ({
 
     const handleLogout = async () => {
         await signOut();
-        navigate('/');
+        window.location.href = '/';
     };
 
     const Logo = () => (
@@ -39,7 +39,7 @@ const Sidebar = ({
                 <MessageSquare className="w-4 h-4 text-slate-400" />
             </div>
             <p className="text-slate-400 text-xs text-center leading-relaxed">
-                No sessions yet.<br />Start a new chat.
+                No sessions yet.<br />Upload a document to start.
             </p>
         </div>
     );
@@ -122,7 +122,7 @@ const Sidebar = ({
                 <div className="p-3 shrink-0 border-b border-white/[0.12]">
                     {isExpanded ? (
                         <button
-                            onClick={createNewSession}
+                            onClick={onNewChat}
                             style={{ backgroundColor: '#f59e0b', color: '#0f172a' }}
                             className="w-full h-9 rounded-xl font-heading font-bold px-4 flex items-center justify-center gap-2 shadow-[0_0_16px_rgba(245,158,11,0.2)] hover:brightness-110 transition-all duration-200 cursor-pointer"
                         >
@@ -131,7 +131,7 @@ const Sidebar = ({
                         </button>
                     ) : (
                         <button
-                            onClick={createNewSession}
+                            onClick={onNewChat}
                             className="w-9 h-9 mx-auto rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/15 flex items-center justify-center transition-colors duration-200 cursor-pointer"
                         >
                             <Plus className="text-amber-400 w-[18px] h-[18px]" />
@@ -168,7 +168,7 @@ const Sidebar = ({
                 <div className="p-3 shrink-0 border-b border-white/[0.12]">
                     <button
                         onClick={() => {
-                            createNewSession();
+                            onNewChat();
                             setIsMobileOpen(false);
                         }}
                         style={{ backgroundColor: '#f59e0b', color: '#0f172a' }}

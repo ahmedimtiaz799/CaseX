@@ -1,66 +1,47 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient';
 
-export function useChatSessions() {
+export function useChatSessions(token) {
     const [sessions, setSessions] = useState([]);
     const [activeSessionId, setActiveSessionId] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     const fetchSessions = useCallback(async () => {
+        setLoading(true);
+        setError(null);
         try {
-            const { data, error } = await supabase
-                .from('chat_sessions')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            
-            setSessions(data || []);
-            if (data && data.length > 0 && !activeSessionId) {
-                setActiveSessionId(data[0].id);
-            }
-        } catch (error) {
-            console.error('Error fetching sessions:', error.message);
+            const res = await fetch(`${apiUrl}/api/v1/sessions`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) throw new Error(`Failed to fetch sessions: ${res.status}`);
+            const data = await res.json();
+            setSessions(data.sessions || []);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
-    }, [activeSessionId]);
-
-    const createNewSession = useCallback(async () => {
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error("No authenticated user");
-
-            const { data, error } = await supabase
-                .from('chat_sessions')
-                .insert([{ user_id: user.id, name: 'New Document Chat' }])
-                .select()
-                .single();
-
-            if (error) throw error;
-
-            setSessions(prev => [data, ...prev]);
-            setActiveSessionId(data.id);
-        } catch (error) {
-            console.error('Error creating session:', error.message);
-        }
-    }, []);
+    }, [token, apiUrl]);
 
     const deleteSession = useCallback(async (id) => {
+        setError(null);
         try {
-            const { error } = await supabase
-                .from('chat_sessions')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-
+            const res = await fetch(`${apiUrl}/api/v1/sessions/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) throw new Error(`Failed to delete session: ${res.status}`);
             const filtered = sessions.filter(session => session.id !== id);
             setSessions(filtered);
             if (activeSessionId === id) {
                 setActiveSessionId(filtered.length > 0 ? filtered[0].id : null);
             }
-        } catch (error) {
-            console.error('Error deleting session:', error.message);
+        } catch (err) {
+            setError(err.message);
         }
-    }, [activeSessionId, sessions]);
+    }, [token, activeSessionId, sessions, apiUrl]);
 
     const setActive = useCallback((id) => {
         setActiveSessionId(id);
@@ -69,8 +50,9 @@ export function useChatSessions() {
     return {
         sessions,
         activeSessionId,
+        loading,
+        error,
         fetchSessions,
-        createNewSession,
         deleteSession,
         setActive,
     };

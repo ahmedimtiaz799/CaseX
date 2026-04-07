@@ -33,7 +33,7 @@ const CTASection = () => {
           transition={{ duration: dur(0.45), ease: 'easeOut' }}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
-          Get started today — it's free
+          Get started today
         </motion.div>
 
         <motion.h2
